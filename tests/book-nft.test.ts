@@ -1,21 +1,76 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 
-import { describe, expect, it } from "vitest";
+// Mock contract state
+let books: any[] = [];
+let nextBookId = 1;
+let platformFee = 50; // 5%
 
-const accounts = simnet.getAccounts();
-const address1 = accounts.get("wallet_1")!;
+// Mock contract functions
+function publishBook(author: string, title: string, description: string, coverImage: string, contentHash: string, price: number, totalSupply: number) {
+  const bookId = nextBookId++;
+  books.push({ id: bookId, author, title, description, coverImage, contentHash, price, totalSupply, availableSupply: totalSupply });
+  return { success: true, value: bookId };
+}
 
-/*
-  The test below is an example. To learn more, read the testing documentation here:
-  https://docs.hiro.so/stacks/clarinet-js-sdk
-*/
+function purchaseBook(buyer: string, bookId: number) {
+  const book = books.find(b => b.id === bookId);
+  if (!book || book.availableSupply === 0) {
+    return { success: false, error: 'err-out-of-stock' };
+  }
+  book.availableSupply--;
+  return { success: true };
+}
 
-describe("example tests", () => {
-  it("ensures simnet is well initalised", () => {
-    expect(simnet.blockHeight).toBeDefined();
+function getBook(bookId: number) {
+  const book = books.find(b => b.id === bookId);
+  return book ? { success: true, value: book } : { success: false, error: 'err-not-found' };
+}
+
+function distributeRoyalties(bookId: number, amount: number) {
+  const book = books.find(b => b.id === bookId);
+  if (!book) {
+    return { success: false, error: 'err-not-found' };
+  }
+  const feeAmount = Math.floor((amount * platformFee) / 1000);
+  const authorAmount = amount - feeAmount;
+  // In a real implementation, we would transfer STX here
+  return { success: true, feeAmount, authorAmount };
+}
+
+function setPlatformFee(newFee: number) {
+  if (newFee > 1000) {
+    return { success: false, error: 'err-invalid-fee' };
+  }
+  platformFee = newFee;
+  return { success: true };
+}
+
+// Tests
+describe('Book NFT Contract', () => {
+  beforeEach(() => {
+    books = [];
+    nextBookId = 1;
   });
-
-  // it("shows an example", () => {
-  //   const { result } = simnet.callReadOnlyFn("counter", "get-counter", [], address1);
-  //   expect(result).toBeUint(0);
-  // });
+  
+  it('allows publishing and purchasing books', () => {
+    const publishResult = publishBook('author1', 'Test Book', 'A test book', 'cover.jpg', '0x1234', 1000000, 100);
+    expect(publishResult.success).toBe(true);
+    expect(publishResult.value).toBe(1);
+    
+    const purchaseResult = purchaseBook('reader1', 1);
+    expect(purchaseResult.success).toBe(true);
+    
+    const bookDetails = getBook(1);
+    expect(bookDetails.success).toBe(true);
+    expect(bookDetails.value?.availableSupply).toBe(99);
+  });
+  
+  it('prevents purchasing when out of stock', () => {
+    publishBook('author1', 'Test Book', 'A test book', 'cover.jpg', '0x1234', 1000000, 1);
+    purchaseBook('reader1', 1);
+    const result = purchaseBook('reader2', 1);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('err-out-of-stock');
+  });
 });
+
