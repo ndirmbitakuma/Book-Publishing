@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 // Mock contract state
 let books: any[] = [];
 let nextBookId = 1;
-let platformFee = 50; // 5%
 
 // Mock contract functions
 function publishBook(author: string, title: string, description: string, coverImage: string, contentHash: string, price: number, totalSupply: number) {
@@ -24,25 +23,6 @@ function purchaseBook(buyer: string, bookId: number) {
 function getBook(bookId: number) {
   const book = books.find(b => b.id === bookId);
   return book ? { success: true, value: book } : { success: false, error: 'err-not-found' };
-}
-
-function distributeRoyalties(bookId: number, amount: number) {
-  const book = books.find(b => b.id === bookId);
-  if (!book) {
-    return { success: false, error: 'err-not-found' };
-  }
-  const feeAmount = Math.floor((amount * platformFee) / 1000);
-  const authorAmount = amount - feeAmount;
-  // In a real implementation, we would transfer STX here
-  return { success: true, feeAmount, authorAmount };
-}
-
-function setPlatformFee(newFee: number) {
-  if (newFee > 1000) {
-    return { success: false, error: 'err-invalid-fee' };
-  }
-  platformFee = newFee;
-  return { success: true };
 }
 
 // Tests

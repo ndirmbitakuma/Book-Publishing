@@ -12,20 +12,6 @@ function publishBook(author: string, title: string, description: string, coverIm
   return { success: true, value: bookId };
 }
 
-function purchaseBook(buyer: string, bookId: number) {
-  const book = books.find(b => b.id === bookId);
-  if (!book || book.availableSupply === 0) {
-    return { success: false, error: 'err-out-of-stock' };
-  }
-  book.availableSupply--;
-  return { success: true };
-}
-
-function getBook(bookId: number) {
-  const book = books.find(b => b.id === bookId);
-  return book ? { success: true, value: book } : { success: false, error: 'err-not-found' };
-}
-
 function distributeRoyalties(bookId: number, amount: number) {
   const book = books.find(b => b.id === bookId);
   if (!book) {
@@ -74,3 +60,4 @@ describe('Royalty Distribution Contract', () => {
     expect(platformFee).toBe(50); // Unchanged
   });
 });
+
