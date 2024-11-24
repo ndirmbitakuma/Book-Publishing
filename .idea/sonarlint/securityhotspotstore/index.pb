@@ -9,3 +9,5 @@ F
 tests/book-nft.test.ts,e/6/e61508d4c3010b26306ef02f8143d402641cfbd8
 S
 #contracts/royalty-distribution.clar,9/9/995e55fe213df7ff94d708e34d0568520c645601
+R
+"tests/royalty-distribution.test.ts,e/7/e7225c58018802eab038cf8c0e1ab7709bd94aab
