@@ -9,6 +9,11 @@ requirements = []
 path = 'contracts/book-nft.clar'
 clarity_version = 2
 epoch = 2.5
+
+[contracts.royalty-distribution]
+path = 'contracts/royalty-distribution.clar'
+clarity_version = 2
+epoch = 2.5
 [repl.analysis]
 passes = ['check_checker']
 
